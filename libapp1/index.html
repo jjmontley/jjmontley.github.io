@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?libraries=visualization"></script>
+<style>
+#divMap {
+  width:500px;
+  height:380px;
+}
+</style>
+</head>
+<body>
+
+<div data-role="page" id="pageone">
+  <div data-role="header">
+    <div data-role="navbar">
+      <ul>
+        <li><a  href="#pageone">Welcome</a></li>
+        <li><a  href="#pagetwo">Map</a></li>
+        <li><a href="#pagethree">Locations</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div data-role="main" class="ui-content" >
+    <p>Welcome to resource to find libraries near you!</p>
+    <img src="https://chipublib.bibliocommons.com/locations/uploads/images/full/b4c2f1ea58572c02e4ed70cd0bb1a18f/chinatown.jpg"/>
+  </div>
+
+  <div data-role="footer">
+    <h1>My Footer</h1>
+  </div>
+</div> 
+<div data-role="page" id="pagetwo">
+  <div data-role="header">
+    <div data-role="navbar">
+      <ul>
+        <li><a  href="#pageone">Welcome</a></li>
+        <li><a  href="#pagetwo">Map</a></li>
+        <li><a href="#pagethree">Locations</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div data-role="main" class="ui-content" >
+    <div id="divMap" ></div>
+  </div>
+
+  <div data-role="footer">
+    <h1>My Footer</h1>
+  </div>
+</div> 
+<div data-role="page" id="pagethree">
+  <div data-role="header">
+    <div data-role="navbar">
+      <ul>
+        <li><a  href="#pageone">Welcome</a></li>
+        <li><a  href="#pagetwo">Map</a></li>
+        <li><a href="#pagethree">Locations</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div data-role="main" class="ui-content" >
+    <h1>
+Chicago Public Libraries
+</h1>
+    <p id="result">
+
+</p>
+
+  </div>
+
+  <div data-role="footer">
+    <h1>My Footer</h1>
+  </div>
+</div> 
+<script>
+$(document).ready(function () {
+    		$(document).on("pageshow","#pagetwo",function(){ // When entering pagetwo
+            getLibraryData();
+    		});
+    });
+
+
+function getLibraryData() {
+  var endpointUrl = "https://data.cityofchicago.org/resource/x8fc-8rcq.json";
+
+  var queryString = "";
+
+  var dataUrl = endpointUrl + queryString;
+  
+  console.log(dataUrl);
+  
+  var jqxhr = $.get(dataUrl)
+    .done(function(data) {	
+				console.log(data);
+        drawMap(data);		// if we get data back, draw the map
+       
+    })
+    .fail(function() {
+      //  if the request fails
+      alert( "error" );
+    })
+    .always(function() {
+      //  upon completion, whether success or fail
+    });
+
+
+}
+
+
+function drawMap(data) {
+  
+  // define the center and create the map
+
+  var map = new google.maps.Map(document.getElementById('divMap'), {
+    zoom: 10,
+    center: {lat: 41.881832, lng: -87.623177}
+  });
+
+  //  for each library record, create a marker and an info window
+
+   $.each(data, function (i, entry) {
+
+      // create the content for the info window and store in a string var
+      var contentString = '<div id="content">'+
+          '<div id="siteNotice">'+
+          '</div>'+
+          '<div id="bodyContent">'+
+          '<h2>' + 
+          entry.name_ +
+          '</h2>' + 
+          '<p>' +
+          entry.address +
+          '</p>' +
+          '<p>' +
+          entry.city +
+          '</p>' +
+          '<p>' +
+          entry.state +
+          '</p>' +
+          '<p>' +
+          entry.zip +
+          '</p>' +
+          '<p>' +
+          entry.phone +
+          '</p>' +
+          '<p>' +
+          entry.hours_of_operation +
+          '</p>' + 
+          '<br>' +
+          entry.name_ +
+          
+           '<a href="'+ 
+           entry.website.url + 
+           '">' + 
+           entry.website.url 
+          '</div>'+
+          '</div>';
+
+      // create the info window, using the content string
+      var infowindow = new google.maps.InfoWindow({
+        content: contentString
+      });
+
+      // create the marker
+      var marker = new google.maps.Marker({
+        position: {lat: parseFloat(entry.location.latitude), lng:parseFloat(entry.location.longitude) },
+        map: map,
+        title: ''
+      });
+      
+      // create the click event handler for the marker
+      marker.addListener('click', function() {
+        infowindow.open(map, marker);
+      });   
+   
+   });
+
+
+}
+</script>
+<script>
+var endpointUrl = "https://data.cityofchicago.org/resource/x8fc-8rcq.json";
+
+var queryString = "";
+
+var dataUrl = endpointUrl + queryString;
+console.log(dataUrl);
+
+//   call the method and assign event handlers
+var jqxhr = $.get(dataUrl)
+  .done(function(data) {	
+  		
+      console.log(data);
+      // if the request succeeds 
+      var arrInspections = data;
+      var strHtml = "";
+      $.each(arrInspections, function (i, entry) {
+        strHtml +=  "<h2>" + arrInspections[i].name_ + "</h2>" + arrInspections[i].address + "<br>" + arrInspections[i].city + "<br>" + arrInspections[i].state + "<br>" + arrInspections[i].zip + "<br>"+ arrInspections[i].phone + "<br>" + arrInspections[i].hours_of_operation + "<br>" + arrInspections[i].website.url + "<hr>";
+      });
+  
+  	$("#result").html(strHtml);
+  })
+  .fail(function() {
+  	//  if the request fails
+    alert( "error" );
+  })
+  .always(function() {
+    //  upon completion, whether success or fail
+  });
+</script>
+</body>
+</html>
+
